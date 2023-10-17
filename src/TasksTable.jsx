@@ -1,4 +1,4 @@
-import React, {useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { Button,  Input,  Popconfirm, Radio, Table } from 'antd';
 import { EditableCell, EditableRow } from './helperFunctions';
 import {  DeleteOutlined } from '@ant-design/icons'
@@ -9,11 +9,28 @@ const TasksTable = () => {
   const [count, setCount] = useState(1);
   const [filtedTasks, setfiltedTasks] = useState([])
   const [filterInput, setFilterInput] = useState('')
-  const handleDelete = (key) => {
+
+  useEffect(() => {
+    const cachedTasks = JSON.parse(localStorage.getItem('tasks'));
+    if (cachedTasks) {
+      setTasks(cachedTasks);
+      setCount(cachedTasks.length + 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks))
+  }, [tasks]);
+
+  function clearFilter(){
     setfiltedTasks([])
     setFilterInput('')
-    const newTask = tasks.filter((item) => item.key !== key);
-    setTasks(newTask);
+  }
+  const handleDelete = (key) => {
+    clearFilter();
+    const newTasks = tasks.filter((item) => item.key !== key);
+    setTasks(newTasks);
+    localStorage.setItem('tasks', JSON.stringify(newTasks)); // Update localStorage
   };
   const defaultColumns = [
     {
@@ -55,16 +72,17 @@ const TasksTable = () => {
     },
   ];
   const handleAdd = () => {
-    setfiltedTasks([])
-    setFilterInput('')
+    clearFilter();
     const newTask = {
       key: count,
       task: `New Task ${count}`,
-      taskDescription:'Task Description... ',
+      taskDescription: 'Task Description...',
       status: 'Not Started',
     };
-    setTasks([...tasks, newTask]);
-    setCount(prev=>prev + 1);
+    const newTasks = [...tasks, newTask];
+    setTasks(newTasks);
+    setCount((prev) => prev + 1);
+    localStorage.setItem('tasks', JSON.stringify(newTasks)); // Update localStorage
   };
   const handleSave = (row) => {
     const newTask = [...tasks];
