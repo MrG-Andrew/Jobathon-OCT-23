@@ -1,53 +1,76 @@
 import React, {useState } from 'react';
-import { Button,  Popconfirm, Table } from 'antd';
+import { Button,  Popconfirm, Radio, Table } from 'antd';
 import { EditableCell, EditableRow } from './helperFunctions';
+import {  DeleteOutlined } from '@ant-design/icons'
+import StatusSelect from './StatusSelect';
+import './TasksTable.css'
 const TasksTable = () => {
-  const [dataSource, setDataSource] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [count, setCount] = useState(1);
   const handleDelete = (key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
+    const newTask = tasks.filter((item) => item.key !== key);
+    setTasks(newTask);
   };
   const defaultColumns = [
     {
-      title: 'task',
+      title: 'Task',
       dataIndex: 'task',
-      width: '30%',
+      width: '20%',
       editable: true,
     },
     {
-      title: 'status',
-      dataIndex: 'status',
+      title: 'Task Description',
+      dataIndex: 'taskDescription',
+      width: '50%',
+      editable: true,
     },
     {
-      title: 'operation',
-      dataIndex: 'operation',
+      title: 'Status',
+      width: '30%',
+      dataIndex: 'status',
+      render: (_, record) => (
+        tasks.length >= 1 ? (
+          <StatusSelect handleStatus={handleStatus} keyValue={record.key}/>
+        ) : null
+      )
+    },
+    {
+      align:'center',
+      title: '',
+      dataIndex: 'action',
       render: (_, record) =>
-        dataSource.length >= 1 ? (
+        tasks.length >= 1 ? (
           <Popconfirm title="Are you sure ?" onConfirm={() => handleDelete(record.key)}>
-            <a>Delete</a>
+            <DeleteOutlined style={{color:"red", fontSize:'1.2rem'}} />
           </Popconfirm>
         ) : null,
     },
   ];
   const handleAdd = () => {
-    const newData = {
+    const newTask = {
       key: count,
       task: `New Task ${count}`,
-      status: `Not Started`,
+      taskDescription:'Task Description... ',
+      status: 'Not Started',
     };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
+    setTasks([...tasks, newTask]);
+    setCount(prev=>prev + 1);
   };
   const handleSave = (row) => {
-    const newData = [...dataSource];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
+    const newTask = [...tasks];
+    const index = newTask.findIndex((item) => row.key === item.key);
+    const item = newTask[index];
+    newTask.splice(index, 1, {
       ...item,
       ...row,
     });
-    setDataSource(newData);
+    setTasks(newTask);
+  };
+  const handleStatus = (key, value) => {
+    const newTasks = [...tasks];
+    const index = newTasks.findIndex((item) => item.key === key);
+    newTasks[index].status = value;
+    setTasks(newTasks);
   };
   const components = {
     body: {
@@ -83,9 +106,14 @@ const TasksTable = () => {
       </Button>
       <Table
         components={components}
-        rowClassName={() => 'editable-row'}
+        rowClassName={(record) => {
+          if (record.status === 'Not Started') return 'not-started editable-row';
+          if (record.status === 'In Progress') return 'in-progress editable-row';
+          if (record.status === 'Finished') return 'finished editable-row';
+          return 'editable-row';
+        }}
         bordered
-        dataSource={dataSource}
+        dataSource={tasks}
         columns={columns}
       />
     </div>
