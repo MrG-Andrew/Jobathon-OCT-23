@@ -1,8 +1,11 @@
-import React, {useState, useEffect} from 'react'
+import React from 'react'
+import TasksTable from './TasksTable'
 
 export default function App() {
-  const [state, setstate] = useState({})
+  
   return (
-    <div>Home</div>
+    <>
+      <TasksTable/>
+    </>
   )
 }
