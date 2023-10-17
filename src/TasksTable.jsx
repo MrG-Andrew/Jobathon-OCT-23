@@ -1,5 +1,5 @@
 import React, {useState } from 'react';
-import { Button,  Popconfirm, Radio, Table } from 'antd';
+import { Button,  Input,  Popconfirm, Radio, Table } from 'antd';
 import { EditableCell, EditableRow } from './helperFunctions';
 import {  DeleteOutlined } from '@ant-design/icons'
 import StatusSelect from './StatusSelect';
@@ -7,7 +7,11 @@ import './TasksTable.css'
 const TasksTable = () => {
   const [tasks, setTasks] = useState([]);
   const [count, setCount] = useState(1);
+  const [filtedTasks, setfiltedTasks] = useState([])
+  const [filterInput, setFilterInput] = useState('')
   const handleDelete = (key) => {
+    setfiltedTasks([])
+    setFilterInput('')
     const newTask = tasks.filter((item) => item.key !== key);
     setTasks(newTask);
   };
@@ -17,12 +21,16 @@ const TasksTable = () => {
       dataIndex: 'task',
       width: '20%',
       editable: true,
+      sorter: (a, b) => a.task.toLowerCase().localeCompare(b.task.toLowerCase()),
+      sortDirections: ['ascend', 'descend', 'ascend'],
     },
     {
       title: 'Task Description',
       dataIndex: 'taskDescription',
       width: '50%',
       editable: true,
+      sorter: (a, b) => a.task.toLowerCase().localeCompare(b.task.toLowerCase()),
+      sortDirections: ['ascend', 'descend', 'ascend'],
     },
     {
       title: 'Status',
@@ -47,6 +55,8 @@ const TasksTable = () => {
     },
   ];
   const handleAdd = () => {
+    setfiltedTasks([])
+    setFilterInput('')
     const newTask = {
       key: count,
       task: `New Task ${count}`,
@@ -104,6 +114,7 @@ const TasksTable = () => {
       >
         Add a Task
       </Button>
+      <Input value={filterInput} allowClear placeholder='Type to filter tasks...' onChange={e =>{ setfiltedTasks(tasks.filter(task => task.task.includes(e.target.value) || task.taskDescription.includes(e.target.value)));setFilterInput(e.target.value)}} />
       <Table
         components={components}
         rowClassName={(record) => {
@@ -113,9 +124,10 @@ const TasksTable = () => {
           return 'editable-row';
         }}
         bordered
-        dataSource={tasks}
+        dataSource={filtedTasks.length > 0? filtedTasks:tasks}
         columns={columns}
       />
+      <div className='note'>*click on any field to edit</div>
     </div>
   );
 };
